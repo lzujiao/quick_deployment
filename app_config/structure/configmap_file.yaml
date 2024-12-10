@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: structure-configmap
+  namespace: #namespace
+data:
+  #config

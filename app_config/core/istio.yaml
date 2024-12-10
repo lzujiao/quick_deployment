@@ -1,0 +1,72 @@
+---
+# 定义gateway规则，相当于一个http server 定义
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: agent-core-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 9486
+      name: http-9486
+      protocol: HTTP
+    hosts:
+    - "*"
+
+---
+# 定义流量转发规则，要绑定到 Gateway 资源定义
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: agent-core-virtualservice
+  namespace: istio-system
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - agent-core-gateway
+  http:
+  - match:
+    - port: 9486
+    route:
+    - destination:
+        host: dde-agent-core.geogpt-dev.svc.cluster.local
+        port:
+          number: 9486
+    corsPolicy:
+      allowOrigin:
+      - "*" # 允许所有域名访问，可以根据需要指定特定的域名
+      allowMethods:
+      - POST
+      - GET
+      - OPTIONS
+      - PUT
+      - DELETE
+      allowHeaders:
+      - content-type
+      - authorization
+      allowCredentials: true
+      maxAge: "24h"
+---
+# 打开集群节点端口，将8065端口流量捕获到 ingressgateway
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: agent-core-gateway-istio-svc
+  name: agent-core-istio
+  namespace: istio-system
+spec:
+  externalIPs:
+  - 10.200.48.44
+  ports:
+  - name: agent-core-port
+    port: 9486
+    protocol: TCP
+    targetPort: 9486
+  selector:
+    istio: ingressgateway
+  sessionAffinity: None

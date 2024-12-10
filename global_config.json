@@ -1,0 +1,45 @@
+{
+	"service_msg": {
+		"core": {
+			"dir": "modelscope-agent-custom",
+			"git_url": "http://tom.git",
+			"port": 9486,
+			"main_position":"apps.agentcore.main:app"
+		},
+		"plugin": {
+			"dir": "dde-agent-plugins-python",
+			"git_url": "http://hon.git",
+			"port": 9487,
+			"main_position":"main:app"
+		},
+		"structure": {
+			"dir": "dde-agent-structure",
+			"git_url": "http://re.git",
+			"port": 9492,
+			"main_position":"main:app"
+		},
+		"chatbot": {
+			"dir": "doc-chatbot",
+			"git_url": "http://ot.git",
+			"port": 9491,
+			"main_position":"main:app",
+			"docker_script_path": "./agent_app_config/doc-chatbot/script/Dockerfile_jenkins"
+		}
+	},
+	"registry": {
+		"habor": {
+			"docker_registry": "**",
+			"docker_user": "admin",
+			"docker_password": "**",
+			"image_secret": "**",
+			"project": "**"
+		},
+		"hz-aliyun": {
+			"docker_registry": "**",
+			"docker_user": "15608060337",
+			"docker_password": "**",
+			"image_secret": "**",
+			"project": "**"
+		}
+	}
+}

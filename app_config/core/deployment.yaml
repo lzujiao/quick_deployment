@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: dde-agent-core
+    branch: #branch
+  name: dde-agent-core
+  namespace: #namespace
+spec:
+  progressDeadlineSeconds: 600
+  replicas: #repeat
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: dde-agent-core
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: dde-agent-core
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - work2
+                - work3
+      containers:
+        - args:
+            - 'apps.agentcore.main:app'
+            - '--host=0.0.0.0'
+            - '--port=9486'
+            - '--workers=#workers'
+          command:
+            - uvicorn
+          envFrom:
+            -  configMapRef:
+                 name: core-configmap
+          image: #image_name
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /health
+              port: 9486
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 3
+          name: dde-agent-core
+          ports:
+            - containerPort: 9486
+              name: core-port
+              protocol: TCP
+          resources:
+            requests:
+              cpu: '4'
+              memory: #memory
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      imagePullSecrets:
+        - name: #image_secret
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

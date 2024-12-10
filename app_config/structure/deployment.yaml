@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: dde-agent-structure
+    branch: #branch
+  name: dde-agent-structure
+  namespace: #namespace
+spec:
+  progressDeadlineSeconds: 600
+  replicas: #repeat
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: dde-agent-structure
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: dde-agent-structure
+    spec:
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+        - args:
+            - 'main:app'
+            - '--host=0.0.0.0'
+            - '--port=9492'
+            - '--workers=#workers'
+          command:
+            - uvicorn
+          envFrom:
+            -  configMapRef:
+                 name: structure-configmap
+          image: #image_name
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /health
+              port: 9492
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 3
+          name: dde-agent-structure
+          ports:
+            - containerPort: 9492
+              name: structure-port
+              protocol: TCP
+          resources:
+            requests:
+              cpu: '4'
+              memory: #memory
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      imagePullSecrets:
+        - name: #image_secret
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
